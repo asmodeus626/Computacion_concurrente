@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amssymb, amsmath, amsbsy} % simbolitos
+\usepackage{multirow} % para tablas
+\usepackage{enumerate}
+\title{Práctica 3\\Computación concurrente}
+\author{Peto Gutiérrez Emmanuel}
+\begin {document}
+\maketitle
+Filósofo \\
+
+Begin
+
+\hspace{0.5cm}while(true)\{
+
+\hspace{1cm}pensar()
+
+\hspace{1cm}wait(palillo\_izquierdo)
+
+\hspace{1cm}wait(palillo\_derecho)
+
+\hspace{1cm}comer()
+
+\hspace{1cm}signal(palillo\_derecho)
+
+\hspace{1cm}signal(palillo\_izquierdo)
+
+\hspace{0.5cm}\}
+
+End \\
+
+El problema no se resuelve porque todos los filósofos toman primero el palillo izquierdo. Si todos terminan de pensar al mismo tiempo, todos tomarán el palillo que tienen a la izquierda al mismo tiempo, después al intentar tomar el derecho se dormirán al llamar el wait(palillo\_derecho), esto es porque todos los palillos que tienen a su derecha ya están ocupados. Esto ocasionará un deadlock. \\
+
+Para resolver el problema se utilizó un semáforo general que le permite la entrada a solo 4 hilos a la sección crítica. Es decir, solo 4 filósofos podrán intentar comer a la vez y el quinto filósofo(el que llegó al final) deberá esperar a que uno de ellos termine de comer para intentar tomar los palillos y eso lo hace libre de deadlock. Antes de que intenten tomar los palillos siempre habrá 1 filósofo dormido, entonces, si todos toman su palillo izquierdo podemos asegurar que el filósofo a la izquierda del dormido va a comer.
+\end {document}

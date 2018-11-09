@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include "cola.h"
+#include "semaforo.h"
 
 void especial(int idhilo, int csemaforo)
 {
@@ -35,8 +35,8 @@ int main()
 		activo[k] = 1; //Inicialmente todos estarán activos.
 	}
 
-	struct Cola cola1; //Cola donde se guardarán los procesos.
-	cola1.size = 0;
+	semaphore s1;
+	inicializar(&s1, sem);
 	
 	//Sección paralela
 	#pragma omp parallel private(i,id,j,sum,val)
@@ -45,37 +45,20 @@ int main()
 
 		for(i=0;i<10;i++)
 		{
-			if(sem<=0)
+			//Esto es para asegurar que solo un hilo a la vez accede a la cola.
+		    #pragma omp critical
 			{
-				//Esto es para asegurar que solo un hilo a la vez accede a la cola.
-				#pragma omp critical
-				{
-					enqueue(&cola1,id); //Metemos el hilo a la cola.
-				}
-				activo[id]=0; //Desactivamos el hilo.
-				while(!activo[id]){} //Espera hasta que se reactive
+				wait(&s1, id, activo);
 			}
-			else
-			{
-				sem--;
-			}
+			while(!activo[id]){} //Espera hasta que se reactive
 
 			//Sección especial
-			especial(id,sem);
+			especial(id,s1.value);
     		//Termina la sección especial
 
-			if(isEmpty(&cola1))
+			#pragma omp critical
 			{
-				sem++;
-			}
-			else
-			{
-				//Para asegurarnos de que solo 1 hilo accede a la cola.
-				#pragma omp critical
-				{
-					val = dequeue(&cola1); //Desencolamos un hilo
-				}
-				activo[val] = 1; //Activamos el hilo
+				signal(&s1, activo);
 			}
 		}
 	}
